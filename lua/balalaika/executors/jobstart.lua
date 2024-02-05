@@ -5,7 +5,7 @@ function JobStart.new(options)
         _jobstart_options = {
             clear_env = options.clear_env or false,
             detach = options.detach or false,
-            pty = options.pty or true,
+            pty = options.pty or false,
             stderr_buffered = options.stderr_buffered or false,
             stdout_buffered = options.stdout_buffered or false,
         },

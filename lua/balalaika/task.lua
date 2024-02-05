@@ -38,7 +38,7 @@ function Task:start()
         self.on_exit()
     end
     self._output:show()
-    self._output.write(
+    self._output:write(
         'Running ' .. self.command .. ' in ' .. self.working_dir .. ':'
     )
     self._jobId = self._executor:stat(

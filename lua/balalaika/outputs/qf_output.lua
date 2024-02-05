@@ -3,7 +3,14 @@ local QfOutput = {
 }
 
 function QfOutput.new()
+    QfOutput:clear()
     return QfOutput
+end
+
+function QfOutput:clear()
+  vim.schedule(function()
+    vim.fn.setqflist({}, 'r')
+  end)
 end
 
 function QfOutput:show(activate)
@@ -36,17 +43,17 @@ end
 
 function QfOutput:on_stdout()
     return function(data)
-        QfOutput.write(data)
+        QfOutput:write(data)
     end
 end
 
 function QfOutput:on_stderr()
     return function(data)
-        QfOutput.write(data)
+        QfOutput:write(data)
     end
 end
 
-function QfOutput.write(data)
+function QfOutput:write(data)
     print('write', vim.inspect(data))
     if type(data) == 'string' then
         data = { data }
