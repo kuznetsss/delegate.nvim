@@ -19,9 +19,15 @@ function JobStart:stat(command, working_dir, on_stdout, on_stderr, on_exit)
         cwd = working_dir,
         detach = self._jobstart_options.detach,
         on_stdout = function(id, data, event)
+            if #data == 1 and string.len(data[1]) == 0 then
+                return
+            end
             on_stdout(data)
         end,
         on_stderr = function(id, data, event)
+            if #data == 1 and string.len(data[1]) == 0 then
+                return
+            end
             on_stderr(data)
         end,
         on_exit = function(id, exit_code, event)

@@ -36,6 +36,16 @@ local function askForDir()
 end
 
 local runningTask = nil
+local previousCommand = nil
+local previousDir = nil
+
+local function createTask(cmd, dir)
+    local Task = require 'balalaika.task'
+    runningTask = Task.new(cmd, dir, function()
+        runningTask = nil
+    end)
+    runningTask:start()
+end
 
 local function runCommand()
     if runningTask then
@@ -54,11 +64,17 @@ local function runCommand()
         return
     end
 
-    local Task = require 'balalaika.task'
-    runningTask = Task.new(cmd, dir, function()
-        runningTask = nil
-    end)
-    runningTask:start()
+    previousCommand = cmd
+    previousDir = dir
+    createTask(cmd, dir)
+end
+
+local repeatCommand = function()
+    if not previousCommand or not previousDir then
+        runCommand()
+    else
+        createTask(previousCommand, previousDir)
+    end
 end
 
 local function stopCommand()
@@ -73,11 +89,17 @@ end
 local M = {}
 
 M.setup = function()
-    vim.keymap.set('n', '<F1>', function()
+    vim.keymap.set('n', '<F5>', function()
+        repeatCommand()
+    end)
+    vim.keymap.set('n', '<F6>', function()
         runCommand()
     end)
-    vim.keymap.set('n', '<F2>', function()
+    vim.keymap.set('n', '<F7>', function()
         stopCommand()
+    end)
+    vim.keymap.set('n', '<F8>', function()
+        require('balalaika.outputs.qf_output'):toggle()
     end)
     vim.notify('Balalaika is ready', vim.log.levels.INFO)
 end

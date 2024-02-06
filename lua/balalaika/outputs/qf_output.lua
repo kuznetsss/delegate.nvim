@@ -1,5 +1,8 @@
+local DEFAULT_HEIGHT = 15
+
 local QfOutput = {
     _window = nil,
+    _height = DEFAULT_HEIGHT,
 }
 
 function QfOutput.new()
@@ -19,7 +22,7 @@ function QfOutput:show(activate)
         vim.cmd 'copen'
         vim.cmd.wincmd 'J'
         self._window = vim.api.nvim_get_current_win()
-        vim.api.nvim_win_set_height(self._window, 15)
+        vim.api.nvim_win_set_height(self._window, self._height)
     end
     if activate then
         vim.api.nvim_set_current_win(previousWindowId)
@@ -28,6 +31,7 @@ end
 
 function QfOutput:hide()
     if self._window and vim.api.nvim_win_is_valid(self._window) then
+        self._height = vim.api.nvim_win_get_height(self._window)
         vim.api.nvim_win_close(self._window, false)
         self._window = nil
     end
@@ -54,7 +58,6 @@ function QfOutput:on_stderr()
 end
 
 function QfOutput:write(data)
-    print('write', vim.inspect(data))
     if type(data) == 'string' then
         data = { data }
     end
