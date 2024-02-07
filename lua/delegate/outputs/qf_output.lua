@@ -65,13 +65,18 @@ function QfOutput:write(data)
     data = vim.tbl_filter(function(line)
         return line ~= ''
     end, data)
-    vim.fn.setqflist({}, 'a', { lines = data })
-    if vim.opt.filetype == 'qf' then
-        local currentLine, _ = vim.api.nvim_win_get_cursor(0)
-        local lastLine = vim.fn.line '$'
+    local moveCursor = false
+    if self._window and vim.api.nvim_win_is_valid(self._window) then
+        local currentLine, _ = unpack(vim.api.nvim_win_get_cursor(self._window))
+        local buffer = vim.api.nvim_win_get_buf(self._window)
+        local lastLine = vim.api.nvim_buf_line_count(buffer)
         if currentLine == lastLine then
-            vim.cmd 'cbottom'
+            moveCursor = true
         end
+    end
+    vim.fn.setqflist({}, 'a', { lines = data })
+    if moveCursor then
+        vim.cmd.cbottom()
     end
 end
 
