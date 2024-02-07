@@ -17,8 +17,8 @@ function Task.new(command, working_dir, on_exit)
         working_dir = working_dir,
         on_exit = on_exit or function() end,
         _status = Task.Status.CREATED,
-        _executor = require('balalaika.executors.jobstart').new {},
-        _output = require('balalaika.outputs.qf_output').new(),
+        _executor = require('delegate.executors.jobstart').new {},
+        _output = require('delegate.outputs.qf_output').new(),
         _jobId = nil,
     }
     return setmetatable(obj, { __index = Task })

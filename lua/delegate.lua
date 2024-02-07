@@ -40,7 +40,7 @@ local previousCommand = nil
 local previousDir = nil
 
 local function createTask(cmd, dir)
-    local Task = require 'balalaika.task'
+    local Task = require 'delegate.task'
     runningTask = Task.new(cmd, dir, function()
         runningTask = nil
     end)
@@ -99,9 +99,9 @@ M.setup = function()
         stopCommand()
     end)
     vim.keymap.set('n', '<F8>', function()
-        require('balalaika.outputs.qf_output'):toggle()
+        require('delegate.outputs.qf_output'):toggle()
     end)
-    vim.notify('Balalaika is ready', vim.log.levels.INFO)
+    vim.notify('Delefate is ready', vim.log.levels.INFO)
 end
 
 return M
