@@ -11,9 +11,7 @@ function QfOutput.new()
 end
 
 function QfOutput:clear()
-  vim.schedule(function()
     vim.fn.setqflist({}, 'r')
-  end)
 end
 
 function QfOutput:show(activate)
@@ -61,16 +59,20 @@ function QfOutput:write(data)
     if type(data) == 'string' then
         data = { data }
     end
-    vim.schedule(function()
-        vim.fn.setqflist({}, 'a', { lines = data })
-        if vim.opt.filetype == 'qf' then
-            local currentLine, _ = vim.api.nvim_win_get_cursor(0)
-            local lastLine = vim.fn.line '$'
-            if currentLine == lastLine then
-                vim.cmd 'cbottom'
-            end
+    for i, line in ipairs(data) do
+        data[i] = line:gsub('\r', '')
+    end
+    data = vim.tbl_filter(function(line)
+        return line ~= ''
+    end, data)
+    vim.fn.setqflist({}, 'a', { lines = data })
+    if vim.opt.filetype == 'qf' then
+        local currentLine, _ = vim.api.nvim_win_get_cursor(0)
+        local lastLine = vim.fn.line '$'
+        if currentLine == lastLine then
+            vim.cmd 'cbottom'
         end
-    end)
+    end
 end
 
 return QfOutput

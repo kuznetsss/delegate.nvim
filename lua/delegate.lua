@@ -40,6 +40,7 @@ local previousCommand = nil
 local previousDir = nil
 
 local function createTask(cmd, dir)
+    vim.cmd.update()
     local Task = require 'delegate.task'
     runningTask = Task.new(cmd, dir, function()
         runningTask = nil
