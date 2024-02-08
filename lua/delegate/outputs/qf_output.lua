@@ -59,9 +59,6 @@ function QfOutput:write(data)
     if type(data) == 'string' then
         data = { data }
     end
-    for i, line in ipairs(data) do
-        data[i] = line:gsub('\r', '')
-    end
     data = vim.tbl_filter(function(line)
         return line ~= ''
     end, data)
