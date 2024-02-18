@@ -12,7 +12,7 @@ local function askForCmd()
     }, function(input)
         cmd = input
     end)
-    if cmd == '' then
+    if not cmd or cmd == '' then
         return nil
     end
 
@@ -28,6 +28,9 @@ local function askForDir()
     }, function(input)
         dir = input
     end)
+    if not dir or dir == '' then
+        return nil
+    end
     if not is_directory(dir) then
         vim.notify('Not a directory: ' .. dir, vim.log.levels.ERROR)
         return nil
@@ -39,7 +42,9 @@ local runningTask = nil
 local previousCommand = nil
 local previousDir = nil
 
-local function createTask(cmd, dir)
+local M = {}
+
+function M.createTask(cmd, dir)
     vim.cmd.update()
     local Task = require 'delegate.task'
     runningTask = Task.new(cmd, dir, function()
@@ -48,7 +53,7 @@ local function createTask(cmd, dir)
     runningTask:start()
 end
 
-local function runCommand()
+function M.runCommand()
     if runningTask then
         vim.notify('Job is already running', vim.log.levels.INFO)
         return
@@ -67,18 +72,18 @@ local function runCommand()
 
     previousCommand = cmd
     previousDir = dir
-    createTask(cmd, dir)
+    M.createTask(cmd, dir)
 end
 
-local repeatCommand = function()
+function M.repeatCommand()
     if not previousCommand or not previousDir then
-        runCommand()
+        M.runCommand()
     else
-        createTask(previousCommand, previousDir)
+        M.createTask(previousCommand, previousDir)
     end
 end
 
-local function stopCommand()
+function M.stopCommand()
     if not runningTask then
         vim.notify('No running command', vim.log.levels.INFO)
         return
@@ -87,22 +92,35 @@ local function stopCommand()
     runningTask = nil
 end
 
-local M = {}
-
 M.setup = function()
-    vim.keymap.set('n', '<F5>', function()
-        repeatCommand()
-    end)
-    vim.keymap.set('n', '<F6>', function()
-        runCommand()
-    end)
-    vim.keymap.set('n', '<F7>', function()
-        stopCommand()
-    end)
-    vim.keymap.set('n', '<F8>', function()
-        require('delegate.outputs.qf_output'):toggle()
-    end)
-    vim.notify('Delefate is ready', vim.log.levels.INFO)
+    vim.api.nvim_create_user_command(
+        'DelegateRun',
+        function()
+            M.runCommand()
+        end,
+        {}
+    )
+    vim.api.nvim_create_user_command(
+        'DelegateRepeat',
+        function()
+            M.repeatCommand()
+        end,
+        {}
+    )
+    vim.api.nvim_create_user_command(
+        'DelegateStop',
+        function()
+            M.stopCommand()
+        end,
+        {}
+    )
+    vim.api.nvim_create_user_command(
+        'DelegateToggleOutput',
+        function()
+            require('delegate.outputs.qf_output'):toggle()
+        end,
+        {}
+    )
 end
 
 return M
