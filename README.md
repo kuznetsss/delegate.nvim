@@ -1,8 +1,8 @@
-# Delegate.nvim
+# 🤝 Delegate.nvim
 
-[!NOTE]
-This plugin is still in development (even though I'm using it in my daily workflow).
-API may change in the future.
+> [!Important]
+> This plugin is still in development (even though I'm using it in my daily workflow).
+> API may change in the future.
 
 Delegate your tasks to the plugin.
 
