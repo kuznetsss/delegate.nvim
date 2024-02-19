@@ -3,11 +3,15 @@ local function is_directory(path)
     return dir_stat and dir_stat.type == 'directory'
 end
 
+local runningTask = nil
+local previousCommand = nil
+local previousDir = nil
+
 local function askForCmd()
     local cmd = nil
     vim.ui.input({
         prompt = 'Command: ',
-        default = '',
+        default = previousCommand or '',
         completion = 'shellcmd',
     }, function(input)
         cmd = input
@@ -23,7 +27,7 @@ local function askForDir()
     local dir = nil
     vim.ui.input({
         prompt = 'Directory to run: ',
-        default = vim.fn.getcwd(),
+        default = previousDir or vim.fn.getcwd(),
         completion = 'dir',
     }, function(input)
         dir = input
@@ -37,10 +41,6 @@ local function askForDir()
     end
     return dir
 end
-
-local runningTask = nil
-local previousCommand = nil
-local previousDir = nil
 
 local M = {}
 
