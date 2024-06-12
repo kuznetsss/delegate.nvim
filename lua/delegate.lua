@@ -78,6 +78,10 @@ function M.runCommand()
 end
 
 function M.repeatCommand()
+    if runningTask then
+        log('Job is already running', vim.log.levels.INFO)
+        return
+    end
     if not previousCommand or not previousDir then
         M.runCommand()
     else
