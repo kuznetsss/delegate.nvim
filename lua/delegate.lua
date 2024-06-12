@@ -1,3 +1,5 @@
+local log = require'delegate.utils'.log
+
 local function is_directory(path)
     local dir_stat = vim.loop.fs_stat(path)
     return dir_stat and dir_stat.type == 'directory'
@@ -36,7 +38,7 @@ local function askForDir()
         return nil
     end
     if not is_directory(dir) then
-        vim.notify('Not a directory: ' .. dir, vim.log.levels.ERROR)
+        log('Not a directory: ' .. dir, vim.log.levels.ERROR)
         return nil
     end
     return dir
@@ -55,18 +57,18 @@ end
 
 function M.runCommand()
     if runningTask then
-        vim.notify('Job is already running', vim.log.levels.INFO)
+        log('Job is already running', vim.log.levels.INFO)
         return
     end
     local cmd = askForCmd()
     if not cmd then
-        vim.notify('No command to run', vim.log.levels.INFO)
+        log('No command to run', vim.log.levels.INFO)
         return
     end
 
     local dir = askForDir()
     if not dir then
-        vim.notify('No directory to run', vim.log.levels.INFO)
+        log('No directory to run', vim.log.levels.INFO)
         return
     end
 
@@ -85,7 +87,7 @@ end
 
 function M.stopCommand()
     if not runningTask then
-        vim.notify('No running command', vim.log.levels.INFO)
+        log('No running command', vim.log.levels.INFO)
         return
     end
     runningTask:stop()
