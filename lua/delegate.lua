@@ -1,4 +1,4 @@
-local log = require'delegate.utils'.log
+local log = require('delegate.utils').log
 
 local function is_directory(path)
     local dir_stat = vim.loop.fs_stat(path)
@@ -9,39 +9,37 @@ local runningTask = nil
 local previousCommand = nil
 local previousDir = nil
 
-local function askForCmd()
-    local cmd = nil
+local function askForCmd(onCmd)
     vim.ui.input({
         prompt = 'Command: ',
         default = previousCommand or '',
         completion = 'shellcmd',
     }, function(input)
         cmd = input
+        if not cmd or cmd == '' then
+            return nil
+        end
+        onCmd(cmd)
     end)
-    if not cmd or cmd == '' then
-        return nil
-    end
-
-    return cmd
 end
 
-local function askForDir()
-    local dir = nil
+local function askForDir(onDir)
     vim.ui.input({
         prompt = 'Directory to run: ',
         default = previousDir or vim.fn.getcwd(),
         completion = 'dir',
     }, function(input)
         dir = input
+        if not dir or dir == '' then
+            return nil
+        end
+        if not is_directory(dir) then
+            log('Not a directory: ' .. dir, vim.log.levels.ERROR)
+            return nil
+        end
+
+        onDir(dir)
     end)
-    if not dir or dir == '' then
-        return nil
-    end
-    if not is_directory(dir) then
-        log('Not a directory: ' .. dir, vim.log.levels.ERROR)
-        return nil
-    end
-    return dir
 end
 
 local M = {}
@@ -60,21 +58,27 @@ function M.runCommand()
         log('Job is already running', vim.log.levels.INFO)
         return
     end
-    local cmd = askForCmd()
-    if not cmd then
-        log('No command to run', vim.log.levels.INFO)
-        return
+
+    local onCmd = function(cmd)
+        if not cmd then
+            log('No command to run', vim.log.levels.INFO)
+            return
+        end
+
+        local onDir = function(dir)
+            if not dir then
+                log('No directory to run', vim.log.levels.INFO)
+                return
+            end
+
+            previousCommand = cmd
+            previousDir = dir
+            M.createTask(cmd, dir)
+        end
+        askForDir(onDir)
     end
 
-    local dir = askForDir()
-    if not dir then
-        log('No directory to run', vim.log.levels.INFO)
-        return
-    end
-
-    previousCommand = cmd
-    previousDir = dir
-    M.createTask(cmd, dir)
+    askForCmd(onCmd)
 end
 
 function M.repeatCommand()
@@ -99,34 +103,18 @@ function M.stopCommand()
 end
 
 M.setup = function()
-    vim.api.nvim_create_user_command(
-        'DelegateRun',
-        function()
-            M.runCommand()
-        end,
-        {}
-    )
-    vim.api.nvim_create_user_command(
-        'DelegateRepeat',
-        function()
-            M.repeatCommand()
-        end,
-        {}
-    )
-    vim.api.nvim_create_user_command(
-        'DelegateStop',
-        function()
-            M.stopCommand()
-        end,
-        {}
-    )
-    vim.api.nvim_create_user_command(
-        'DelegateToggleOutput',
-        function()
-            require('delegate.outputs.qf_output'):toggle()
-        end,
-        {}
-    )
+    vim.api.nvim_create_user_command('DelegateRun', function()
+        M.runCommand()
+    end, {})
+    vim.api.nvim_create_user_command('DelegateRepeat', function()
+        M.repeatCommand()
+    end, {})
+    vim.api.nvim_create_user_command('DelegateStop', function()
+        M.stopCommand()
+    end, {})
+    vim.api.nvim_create_user_command('DelegateToggleOutput', function()
+        require('delegate.outputs.qf_output'):toggle()
+    end, {})
 end
 
 return M
